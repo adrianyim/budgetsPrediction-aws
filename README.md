@@ -1,1 +1,1 @@
-﻿# practing AWS
+﻿# practicing AWS
