@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+Update
+{% endblock %}
+
+{% block header %}
+<label>Welcome {{user.first_name}}, </label>
+<label><a href="user/login">Logout</a></label>
+{% endblock %}
+
+{% block content %}
+<table class="container">
+    <form method="POST" action="/home/updateItems/{{item.id}}" >
+        {% csrf_token %}
+        {{updateForm}}
+        <tr><td colspan="2"><button type="submit" class="btn btn-outline-info btn-sm">Update</button></td></tr>
+    </form>    
+    <td><a href="/home/"><button type="button" class="btn btn-outline-secondary btn-sm">Back</button></a></td> 
+    </table>
+
+{% endblock %}

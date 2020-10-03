@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-md-center">
+    <table style="text-align:center" class="table table-borderless">
+        <tr><th><h3>Budget Guardian</h3></th></tr>
+        <tr><td>{% for message in messages %}{{message}}{% endfor %}</td></tr>
+        <form method="POST" action="login">
+            {% csrf_token %}
+            <tr><td><input type="text" name="username" placeholder="User Name"></td></tr>
+            <tr><td><input type="password" name="password" placeholder="Password"></td></tr>
+            <tr><td><button type="submit" class="btn btn-info btn-sm">Login</button></td></tr>
+            <tr><td><a href="register"><button type="button" class="btn btn-warning btn-sm">Register</button></a></td></tr>
+    </table>
+</div>
+{% endblock %}

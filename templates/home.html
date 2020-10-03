@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block header %}
+<div class="mx-5">
+    <label>Welcome {{user.first_name}}, </label>
+<label><a href="/user/logout">Logout</a></label>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-md-center mx-5">
+    <table id="table-item" class="table table-borderless" style="text-align: center">
+        <!-- <form method="POST" action="insertItems">
+            {% csrf_token %}
+            {{item_form}}
+            <tr><td></td><td><button type="submit" class="btn btn-outline-info btn-sm">Submit</button></td></tr>
+        </form>
+            <tr><td>Total income: $ {{income}}</td><td>Total expense: $ {{expense}}</td></tr> -->
+        <form method="POST" action="new_insertItems">
+            {% csrf_token %}
+            {{new_item_form}}
+            <tr><td></td><td><button type="submit" class="btn btn-outline-info btn-sm">Submit</button></td></tr>
+        </form>
+            <tr><td colspan="2">How many days do you want to predict?</td></tr>
+        <form method="POST" class="day-form" action='home'>
+            {% csrf_token %}
+            {{day_form}}
+            <tr><td></td><td><button type="submit" class="btn btn-warning btn-sm">Predict</button></td></tr>
+        </form>
+    </table>
+    {% for message in messages %}{{message}}{% endfor %}
+    {% autoescape off %}{{predict_list}}{% endautoescape %}
+</div>
+<div class="row justify-content-md-center mx-5">
+    <canvas id="showChart" width="100%" height="45%"></canvas>
+</div>
+<div class="row justify-content-md-center mx-5 p-3 table-success">
+    <table class="table-hover">
+        <tr><form method="POST">
+            {% csrf_token %}
+            {{myFilter.form}}
+            <td><button type="submit" class="btn btn-warning btn-sm">Filter</button></td>
+        </form>
+        </tr>
+        <tr><th colspan="3">Total income: $ {{new_income}}</th><th colspan="3">Total expense: $ {{new_expense}}</th></tr>
+        <tr><th>Item</th><th>Item Type</th><th>Cost</th><th>Cost Type</th><th>Remark</th><th>Date</th></tr>
+        {% for item in new_items %}
+        <tr>
+            <td>{{item.item}}</td>
+            <td>{{item.item_type}}</td>
+            <td>{{item.cost}}</td>
+            <td>{{item.cost_type}}</td>
+            <td>{{item.remark}}</td>
+            <td>{{item.date}}</td>
+            <td><a href="new_updateItems/{{item.id}}"><button type="button" class="btn btn-primary btn-sm">Update</button></a></td>
+            <td><a href="new_deleteItems/{{item.id}}"><button type="button" class="btn btn-outline-danger btn-sm">Delete</button></a></td>
+        </tr>
+        {% endfor %}
+        <!-- <tr><th>Item</th><th>Item Type</th><th>Cost</th><th>Cost Type</th><th>Remark</th><th>Date</th></tr>
+        {% for item in items %}
+        <tr>
+            <td>{{item.item}}</td>
+            <td>{{item.item_type}}</td>
+            <td>{{item.cost}}</td>
+            <td>{{item.cost_type}}</td>
+            <td>{{item.remark}}</td>
+            <td>{{item.date}}</td>
+            <td><a href="updateItems/{{item.id}}"><button type="button" class="btn btn-primary btn-sm">Update</button></a></td>
+            <td><a href="deleteItems/{{item.id}}"><button type="button" class="btn btn-outline-danger btn-sm">Delete</button></a></td>
+        </tr>
+        {% endfor %} -->
+    </table>
+</div>
+{% endblock %}
+
+{% block jquery %}
+<script>
+    $(document).ready(function(){
+        var form = $(".day-form")
+        form.submit(function(event){
+            event.preventDefault()
+            var data = $(this).serialize()
+            //var endpoint = form.attr("data-url") || window.location.href
+            var endpoint = "/home/dataset/"
+
+            $.ajax({
+                method: "POST",
+                url: endpoint,
+                data: data,
+                success: handleFormSuccess,
+                error: handleFormError,
+            })
+
+            function handleFormSuccess(data, textStatus, jqXHR){
+                form[0].reset(); // reset form data
+
+                // convert data to Json
+                // predicted data
+                predict_data = JSON.parse(data.predict)
+                predict_date_label = JSON.parse(data.predict_date)
+
+                // orginal data
+                orginal_data = JSON.parse(data.orginal)
+                orginal_date_label = JSON.parse(data.orginal_date)
+
+                var ctx = document.getElementById('showChart');
+                var myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: predict_date_label,
+                        datasets: [
+                        {
+                            label: 'Prediction',
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(54, 162, 235, 0.2)'
+                            ],
+                            fill: false,
+                            data: predict_data,
+                        }] 
+                    },
+                    options: {
+                        scales: {
+                            xAxes: [{
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Date'
+                                }
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero:true
+                                },
+                                scaleLabel: {
+                                    display: true,
+                                    labelString: 'Cost'
+                                }
+                            }]
+                        }
+                    }
+                })
+            }
+        
+            function handleFormError(jqXHR, textStatus, errorThrown){
+                console.log(jqXHR)
+                console.log(textStatus)
+                console.log(errorThrown)
+            }
+        })
+    })
+</script>
+{% endblock%}
